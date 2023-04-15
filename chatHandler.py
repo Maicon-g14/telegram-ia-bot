@@ -13,24 +13,22 @@ logging.basicConfig(
 
 
 async def chatgpt(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    length = 4097 - len(update.message.text)
-
-    if length <= 0:
-        print("Request too big! Please consider breaking it into multiple parts.")
-        return
-
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=update.message.text,
-        max_tokens=length,
-        temperature=0.6,
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Voce se chama White Pixel. Você é uma assistente útil e concisa."},
+            {"role": "user", "content": update.message.text}
+        ]
     )
-    print("Prompt: " + update.message.text)
-    print("Response: " + response.choices[0].text)
+
+    if response['choices'][0]['finish_reason'] != 'stop':
+        print(response)
+
+    print(response['choices'][0]['message']['content'])
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=response.choices[0].text
+        text=response['choices'][0]['message']['content']
     )
 
 
