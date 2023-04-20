@@ -5,6 +5,9 @@ from telegram.ext import filters, MessageHandler, ApplicationBuilder, ContextTyp
 import openai
 import logger
 
+default_agent = "Your name is White Pixel. You are a helpful and concise assistant."
+system_agent = default_agent
+
 openai.api_key = os.getenv("OPEN_AI_TOKEN")
 
 logging.basicConfig(
@@ -13,15 +16,42 @@ logging.basicConfig(
 )
 
 
-def log_response(prompt, response):
-    logger.log(prompt, response)
+def log_response(prompt, response, user):
+    logger.log(prompt, response, user)
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Welcome to White Pixel chatbot. I'm a ChatGPT 3.5 based who can:"
+             "- Remember things with /remember [prhase to remember]"
+             "- Forget your things with /forgetAll"
+             "Tip: The most things you remember the lesser space for queues you will have."
+    )
+
+
+async def remember(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    system_agent += str(update.message.text)
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=system_agent
+    )
+
+
+async def forgetAll(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    system_agent = default_agent
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=system_agent
+    )
 
 
 async def chatgpt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "Voce se chama White Pixel. Você é uma assistente útil e concisa."},
+            {"role": "system", "content": system_agent},
             {"role": "user", "content": update.message.text}
         ]
     )
@@ -30,8 +60,7 @@ async def chatgpt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(response)
         return
 
-    print(response['choices'][0]['message']['content'])
-    log_response(update.message.text, response['choices'][0]['message']['content'])
+    log_response(update.message.text, response['choices'][0]['message']['content'], update.effective_chat.id)
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,

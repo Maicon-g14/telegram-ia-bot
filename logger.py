@@ -2,8 +2,8 @@
 FILE_PATH = ""
 
 
-def log(prompt, response):
-    write_on_file("\n" + prompt + "\n" + response)
+def log(prompt, response, user):
+    write_on_file(str(user) + prompt + "\n" + response)
 
 
 def write_on_file(file, name='log'):
