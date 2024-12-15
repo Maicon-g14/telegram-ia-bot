@@ -22,6 +22,7 @@ async def chatgpt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "Voce se chama White Pixel. Você é uma assistente útil e concisa."},
+            {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
             {"role": "user", "content": update.message.text}
         ]
     )
